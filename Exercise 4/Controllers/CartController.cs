@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Exercise_4.Controllers
@@ -7,39 +10,57 @@ namespace Exercise_4.Controllers
     [ApiController]
     public class CartController : ControllerBase
     {
-        private static Dictionary<int, List<Product>> carts = new Dictionary<int, List<Product>>();
+        private static readonly Dictionary<int, List<Product>> Carts = new Dictionary<int, List<Product>>();
 
         [HttpGet("{userId}")]
         public ActionResult<IEnumerable<Product>> Get(int userId)
         {
-            if (!carts.ContainsKey(userId))
+            Console.WriteLine($"Get cart for user {userId}");
+            if (!Carts.ContainsKey(userId))
                     return StatusCode(404);
             
-            return Ok(carts[userId]);
+            return Ok(Carts[userId]);
         }
         
         [HttpPost("{userId}")]
         public ActionResult<IEnumerable<Product>> Post(int userId, [FromBody] Product product)
         {
-            if (!carts.ContainsKey(userId))
-                carts.Add(userId, new List<Product>());
+            Console.WriteLine($"Add {product.Name} to cart for user {userId}");
+            if (!Carts.ContainsKey(userId))
+                Carts.Add(userId, new List<Product>());
             
-            carts[userId].Add(product);
+            Carts[userId].Add(product);
             
-            return Ok(carts[userId]);
+            return Ok(Carts[userId]);
         }
+        
         [HttpDelete("{userId}")]
         public ActionResult Delete(int userId)
         {
-            if (!carts.ContainsKey(userId))
-                carts.Add(userId, new List<Product>());
+            Console.WriteLine($"Cleaning cart for the user {userId}");
             
-            carts[userId].Add(product);
-            
-            return Ok(carts[userId]);
+            if (!Carts.ContainsKey(userId))
+                return NotFound();
+
+            Carts.Remove(userId);
+
+            return NoContent();
         }
         
-        
+        [HttpDelete("{userId}/{productName}")]
+        public ActionResult Delete(int userId, string productName)
+        {
+            Console.WriteLine($"Removing {productName} from user {userId}'s cart");
+            if (!Carts.ContainsKey(userId))
+                return NotFound();
+
+            Carts[userId] = Carts[userId].Where(x=> x.Name != productName).ToList();
+            
+            if (!Carts[userId].Any())
+                Carts.Remove(userId);
+            
+            return Ok(Carts[userId]);
+        }
         
         
     }

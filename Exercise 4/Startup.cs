@@ -44,9 +44,9 @@ namespace Exercise_4
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
-                    Console.WriteLine("Before context");
+                    Console.WriteLine("Request start");
                     await next(context);
-                    Console.WriteLine($"Action execution time: {stopWatch.ElapsedMilliseconds}");
+                    Console.WriteLine($"Request end. Took: {stopWatch.ElapsedMilliseconds}");
                 });
             //    buildFunc(next => new MyMiddleware(next).Invoke);
             });
